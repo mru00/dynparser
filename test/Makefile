@@ -1,4 +1,5 @@
 .PHONY: test
 
+
 test:
-	PYTHONPATH=.:../src python -m unittest -v testdynparser
+	PYTHONPATH=.:../src python testdynparser.py
