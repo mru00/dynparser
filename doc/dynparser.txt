@@ -90,6 +90,8 @@ SetStatement:
   .
 ---------------------------------------------
 
+However, the inheritance rule is only added when a rule for the
+subclass is added via `add_rule`.
 
 == Choices
 

@@ -35,16 +35,13 @@ def parse_aux(instream, clazz, level):
     else:
 
         instream = instream_orig[:]
-
         productions = get_productions(clazz)
-
         dbg("trying to parse NTE with: " + str(productions))
 
-
         for production in productions:
-            dbg("testing production: %s" %(production))
+            dbg("testing production: %s" %(str(production)))
 
-            assert type(production) == list, "unexpected production item: " + str(production)
+            assert type(production) == tuple, "unexpected production item: " + str(production)
 
             possible_object = clazz()
 

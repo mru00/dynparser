@@ -27,10 +27,12 @@ def add_rule(clazz, arg):
         return item
 
 
-    if type(arg) != list:
-        arg = [ arg ]
+    if type(arg) == list:
+        arg = tuple(arg)
+    elif type(arg) != tuple:
+        arg = ( arg, )
 
-    arg = map(make_te, arg)
+    arg = tuple(map(make_te, arg))
 
     if clazz not in rules.keys():
         rules[clazz] = [ arg ]
