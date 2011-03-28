@@ -4,12 +4,12 @@ mru
 
 [abstract]
 == Abstract
-
+--
 'dynparser' is a python package that provides a runtime-configurable
 parser.
 
 It is a true LL(n) parser and uses backtracking to achieve LL(n).
-
+--
 
 :numbered:
 
@@ -21,6 +21,7 @@ classes.
 
 To create a Nonterminal, derive from `NTE`:
 
+[code,python]
 ---------------------------------------------
 class Program(NTE):pass
 ---------------------------------------------
@@ -28,6 +29,7 @@ class Program(NTE):pass
 A Terminal Symbol is derived from `TE` and can create a regular
 expression to direct to tokenizer:
 
+[code,python]
 ---------------------------------------------
 class Value(TE):
 	expression = re.compile("\d+")
@@ -37,12 +39,14 @@ class Value(TE):
 
 The syntax is created by adding rules to a database:
 
+[code,python]
 ---------------------------------------------
 add_rule(Program, [ "constant", Value ])
 ---------------------------------------------
 
 Such a syntax can be parsed easily:
 
+[code,python]
 ---------------------------------------------
 parse_tree = parse("constant 123")
 ---------------------------------------------
@@ -52,6 +56,7 @@ parse_tree = parse("constant 123")
 
 To add an additional rule in the syntax, inheritance can be utilized.
 
+[code,python]
 ---------------------------------------------
 class Program(NTE):pass
 class Statement(NTE):pass
@@ -100,6 +105,7 @@ SimpleProgram:
 To create choices, additional rules must be defined:
 
 
+[code,python]
 ---------------------------------------------
 class SimpleProgram(NTE): pass
 add_rule(SimpleProgram, [ "{", SimpleProgram, "}"] )
@@ -125,6 +131,7 @@ List: Value { "," Value }
 
 To parse lists, the following syntax is used:
 
+[code,python]
 ---------------------------------------------
 class Rep1(NTE):pass
 class Value(NTE):pass
@@ -155,14 +162,71 @@ syntax arbitrarily.
 
 The project `hla` (https://github.com/mru00/hla) uses this. The syntax
 is extended by `uses` statements. These statements import new python
-modules which in turn define new TE's, NTE's and call `add_rule`.
+modules which in turn define new TE's, NTE's and call `add_rule`. The
+magic happens in the Uses.onparse method.
+
+== Tokenizer
+
+The tokenizer is as dynamic as the parser. Since TE's can provide the
+regular expressions they match, the tokenizer can be configured at
+runtime.
 
 == Examples
+
+=== Expressions
+
+[source,python]
+---------------------------------------------
+class Expression(NTE):pass
+class SimpleExpression(NTE):pass
+class Term(NTE):pass
+class Factor(NTE):pass
+class RelationalOperator(TE):
+    expression=re.compile(r"=|<|>|<=|>|>=")
+class AdditionOperator(TE):
+    expression = re.compile("\+|-|or")
+class MultiplicationOperator(TE):
+    expression = re.compile("\*|/|div|mod|and")
+class Variable(TE):
+    expression = re.compile("\w+")
+class Number(TE):
+    expression = re.compile("\d+")
+class Sign(TE):
+    expression = re.compile("-|\+")
+class SignOpt(NTE):pass
+
+class Rep1(NTE):pass
+class Rep2(NTE):pass
+class Rep3(NTE):pass
+add_rule(SignOpt, [Sign])
+add_rule(SignOpt, [])
+add_rule(Rep1, [ RelationalOperator, SimpleExpression ])
+add_rule(Rep2, [ AdditionOperator, Term ])
+add_rule(Rep3, [ MultiplicationOperator, Factor ])
+
+add_rule(Expression, [ SimpleExpression, [Rep1] ])
+add_rule(SimpleExpression, [ SignOpt, Term, [Rep2] ])
+add_rule(Term, [ Factor, [Rep3] ])
+add_rule(Factor, [ Variable ])
+add_rule(Factor, [ Number ])
+add_rule(Factor, [ "(", Expression, ")" ])
+
+parse("5+4", Expression)
+parse("5+((x*3) * 4-1 / 10 div y)", Expression)
+parse("((x*3) * 4-1 / 10 div y)", Expression)
+parse("5+((x*3) * 41 / 10 div y)", Expression)
+parse("-9* (-9)", Expression)
+parse("5+4+9+9+8+7", Expression)
+---------------------------------------------
+
 
 === Unit Tests
 
 Have a look at the unit tests, in `/test`. They show some features of
 the parser, and real-world examples.
+
+
+
 
 === Project 'hla'
 
