@@ -70,7 +70,7 @@ add_rule(Program, [ Statement ])
 
 The parser will detect the inheritance and try to match
 `PrintStatement` as well as `SetStatement` when a `Statement` is
-required.
+required. This reflects the 'isa' relationship.
 
 This would represent the EBNF:
 
@@ -115,7 +115,7 @@ add_rule(SimpleProgram, "x")
 
 This is similar to the inheritance approach above, but not identical
 because an option implemented this way can have different productions,
-as inhertance-choices are purely forwarind rules.
+as inhertance-choices are purely forwarding rules.
 
 
 == Repetitions
@@ -156,13 +156,20 @@ the given string. Those TE classes have their name set to
 
 == Hooks, Semantic actions
 
+Since the parser returns a parse tree with the NTE/TE classes
+instantiated, semantic actions can be easily defined by implementing
+methods in the classes.
+
+However, to direct the parser while it is running, the following hooks
+are provided:
+
 === NTE.canparse, TE.canparse
 
 This method is called on an NTE/TE when it is about to be
 parsed. Semantic checks can be implemented here. When the method
 returns `False`, the NTE/TE cannot be parsed.
 
-=== TE.onparse, NTE.onparse
+=== NTE.onparse, TE.onparse
 
 Called when an TE/NTE was successfully parsed. For example, this can
 be used to create entries in the Namespace.
@@ -195,7 +202,7 @@ stores, indexed with strings and contain key-value-pairs.
 
 [code,python]
 ---------------------------------------------
-# when reading a variable
+# when reading a variable declaration
 add_symbol('variable', self.items[1].value, self)
 ---------------------------------------------
 
