@@ -28,10 +28,3 @@ def dump_namespace():
             print "    " + symbol + " => " + str(value)
     print "===end dump namespace"
 
-
-def load_mod(name):
-    use = __import__('mod'+name, globals(), locals(), [], 0)
-#    print use, use.__dict__
-#    print help(use)
-    if not get_symbol('mod', name):
-        add_symbol('mod', name, use)

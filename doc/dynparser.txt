@@ -140,9 +140,21 @@ add_rule(List, [ Value, [Rep1] ])
 add_rule(Rep1, [ ",", Value ])
 ---------------------------------------------
 
-But this will change in future.
+But this will change in future, hopefully.
 
-== Hooks
+== Parse Tree
+
+The function `parse` returns the top production class
+instantiated. All NTE classes have the field `items` which contain
+respective TE's, NTE's instantiated. TE classes have a member `value`
+bound to the parsed value.
+
+For constant TE's ( like in this rule: ["is", "+"]), TE classes are
+generated at runtime, containing a regular expression matching exactly
+the given string. Those TE classes have their name set to
+`"TE_"+name`, where name is exactly the given constant string.
+
+== Hooks, Semantic actions
 
 === NTE.canparse, TE.canparse
 
@@ -170,6 +182,24 @@ magic happens in the Uses.onparse method.
 The tokenizer is as dynamic as the parser. Since TE's can provide the
 regular expressions they match, the tokenizer can be configured at
 runtime.
+
+
+== Namespaces
+
+Currently, no hierarchial namespaces are implemented. Probably this
+could be done outside the parser anyway.
+
+Namespace is provided in the module `namespace`. It provides simple
+stores, indexed with strings and contain key-value-pairs.
+
+
+[code,python]
+---------------------------------------------
+# when reading a variable
+add_symbol('variable', self.items[1].value, self)
+---------------------------------------------
+
+
 
 == Examples
 
