@@ -175,7 +175,7 @@ runtime.
 
 === Expressions
 
-[source,python]
+[code,python]
 ---------------------------------------------
 class Expression(NTE):pass
 class SimpleExpression(NTE):pass
