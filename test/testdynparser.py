@@ -69,21 +69,16 @@ class simpletest(unittest.TestCase):
         x = parse("99", Expression)
         self.assertEquals("99", x.items[0].value)
 
+    # this one recurses endlessly:
+    def NO___testExpression2(self):
+        class Expression(NTE): pass
+        class Value(TE):
+            expression = re.compile(r"\d+")
+        add_rule(Expression, [Value])
+        add_rule(Expression, [Expression, "+", Expression])
+        add_rule(Expression, [ "(", Expression, ")"] )
 
-
-
-
-        # and this one recurses endlessly:
-
-    # def testExpression2(self):
-    #     class Expression(NTE): pass
-    #     class Value(TE):
-    #         expression = re.compile(r"\d+")
-    #     add_rule(Expression, [Value])
-    #     add_rule(Expression, [Expression, "+", Expression])
-    #     add_rule(Expression, [ "(", Expression, ")"] )
-
-    #     parse("(99 + (453) + ( ( 2 + (1))))", Expression)
+        parse("(99 + (453) + ( ( 2 + (1))))", Expression)
 
 
 class ExpressionTests(unittest.TestCase):

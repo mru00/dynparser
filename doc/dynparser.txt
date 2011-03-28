@@ -1,13 +1,169 @@
-= dynparser - a dynamic parser that can change the syntax during runtime
+= dynparser - a dynamic parser that can extend the syntax during runtime
 mru
 2011-03
 
 [abstract]
-==Abstract
+== Abstract
 
+'dynparser' is a python package that provides a runtime-configurable
+parser.
+
+It is a true LL(n) parser and uses backtracking to achieve LL(n).
 
 
 :numbered:
 
 
-==Overview
+== Overview
+
+Terminal and Nonterminal symbols are represented as python
+classes.
+
+To create a Nonterminal, derive from `NTE`:
+
+---------------------------------------------
+class Program(NTE):pass
+---------------------------------------------
+
+A Terminal Symbol is derived from `TE` and can create a regular
+expression to direct to tokenizer:
+
+---------------------------------------------
+class Value(TE):
+	expression = re.compile("\d+")
+---------------------------------------------
+
+`TE` provides a defaul-re: `\w+`.
+
+The syntax is created by adding rules to a database:
+
+---------------------------------------------
+add_rule(Program, [ "constant", Value ])
+---------------------------------------------
+
+Such a syntax can be parsed easily:
+
+---------------------------------------------
+parse_tree = parse("constant 123")
+---------------------------------------------
+
+
+== Options through inheritance
+
+To add an additional rule in the syntax, inheritance can be utilized.
+
+---------------------------------------------
+class Program(NTE):pass
+class Statement(NTE):pass
+class PrintStatement(Statement):pass
+class SetStatement(Statement):pass
+
+add_rule(PrintStatement, [ "print", Value ] )
+add_rule(SetStatement, [ "set", Name, "=", Value] )
+add_rule(Program, [ Statement ])
+---------------------------------------------
+
+The parser will detect the inheritance and try to match
+`PrintStatement` as well as `SetStatement` when a `Statement` is
+required.
+
+This would represent the EBNF:
+
+---------------------------------------------
+Program: 
+  Statement
+  .
+Statement: 
+  PrintStatement 
+  | SetStatement
+  .
+PrintStatement: 
+  "print" Value
+  .
+SetStatement: 
+  "set" Name "=" Value
+  .
+---------------------------------------------
+
+
+== Choices
+
+Take this EBNF:
+
+---------------------------------------------
+SimpleProgram:
+  "{" SimpleProgram "}"
+  | "x"
+  .
+---------------------------------------------
+
+To create choices, additional rules must be defined:
+
+
+---------------------------------------------
+class SimpleProgram(NTE): pass
+add_rule(SimpleProgram, [ "{", SimpleProgram, "}"] )
+add_rule(SimpleProgram, "x")
+---------------------------------------------
+
+
+This is similar to the inheritance approach above, but not identical
+because an option implemented this way can have different productions,
+as inhertance-choices are purely forwarind rules.
+
+
+== Repetitions
+
+
+Take this EBNF:
+
+---------------------------------------------
+List: Value { "," Value }
+  .
+---------------------------------------------
+
+
+To parse lists, the following syntax is used:
+
+---------------------------------------------
+class Rep1(NTE):pass
+class Value(NTE):pass
+class List(NTE):pass
+add_rule(List, [ Value, [Rep1] ])
+add_rule(Rep1, [ ",", Value ])
+---------------------------------------------
+
+But this will change in future.
+
+== Hooks
+
+=== NTE.canparse, TE.canparse
+
+This method is called on an NTE/TE when it is about to be
+parsed. Semantic checks can be implemented here. When the method
+returns `False`, the NTE/TE cannot be parsed.
+
+=== TE.onparse, NTE.onparse
+
+Called when an TE/NTE was successfully parsed. For example, this can
+be used to create entries in the Namespace.
+
+== Dynamic Syntax
+
+Syntax rules can be added while parsing. This means one can extend the
+syntax arbitrarily.
+
+The project `hla` (https://github.com/mru00/hla) uses this. The syntax
+is extended by `uses` statements. These statements import new python
+modules which in turn define new TE's, NTE's and call `add_rule`.
+
+== Examples
+
+=== Unit Tests
+
+Have a look at the unit tests, in `/test`. They show some features of
+the parser, and real-world examples.
+
+=== Project 'hla'
+
+See https://github.com/mru00/hla
