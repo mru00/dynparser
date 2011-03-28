@@ -89,23 +89,19 @@ class ExpressionTests(unittest.TestCase):
         class SimpleExpression(NTE):pass
         class Term(NTE):pass
         class Factor(NTE):pass
-        class RelationalOperator(TE):
-            expression=re.compile(r"=|<|>|<=|>|>=")
-        class AdditionOperator(TE):
-            expression = re.compile("\+|-|or")
-        class MultiplicationOperator(TE):
-            expression = re.compile("\*|/|div|mod|and")
-        class Variable(TE):
-            expression = re.compile("\w+")
-        class Number(TE):
-            expression = re.compile("\d+")
-        class Sign(TE):
-            expression = re.compile("-|\+")
+
+        class RelationalOperator(TE):     expression = r"=|<|>|<=|>|>="
+        class AdditionOperator(TE):       expression = r"\+|-|or"
+        class MultiplicationOperator(TE): expression = r"\*|/|div|mod|and"
+        class Variable(TE):               expression = r"\w+"
+        class Number(TE):                 expression = r"\d+"
+        class Sign(TE):                   expression = r"-|\+"
         class SignOpt(NTE):pass
 
         class Rep1(NTE):pass
         class Rep2(NTE):pass
         class Rep3(NTE):pass
+
         add_rule(SignOpt, [Sign])
         add_rule(SignOpt, [])
         add_rule(Rep1, [ RelationalOperator, SimpleExpression ])
