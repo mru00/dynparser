@@ -606,7 +606,7 @@ add_rule(Program, [ Statement ])</tt></pre>
 </div></div>
 <div class="paragraph"><p>The parser will detect the inheritance and try to match
 <tt>PrintStatement</tt> as well as <tt>SetStatement</tt> when a <tt>Statement</tt> is
-required.</p></div>
+required. This reflects the <em>isa</em> relationship.</p></div>
 <div class="paragraph"><p>This would represent the EBNF:</p></div>
 <div class="listingblock">
 <div class="content">
@@ -624,6 +624,8 @@ SetStatement:
   "set" Name "=" Value
   .</tt></pre>
 </div></div>
+<div class="paragraph"><p>However, the inheritance rule is only added when a rule for the
+subclass is added via <tt>add_rule</tt>.</p></div>
 </div>
 <h2 id="_choices">4. Choices</h2>
 <div class="sectionbody">
@@ -644,7 +646,7 @@ add_rule(SimpleProgram, "x")</tt></pre>
 </div></div>
 <div class="paragraph"><p>This is similar to the inheritance approach above, but not identical
 because an option implemented this way can have different productions,
-as inhertance-choices are purely forwarind rules.</p></div>
+as inhertance-choices are purely forwarding rules.</p></div>
 </div>
 <h2 id="_repetitions">5. Repetitions</h2>
 <div class="sectionbody">
@@ -663,19 +665,35 @@ as inhertance-choices are purely forwarind rules.</p></div>
 add_rule(List, [ Value, [Rep1] ])
 add_rule(Rep1, [ ",", Value ])</tt></pre>
 </div></div>
-<div class="paragraph"><p>But this will change in future.</p></div>
+<div class="paragraph"><p>But this will change in future, hopefully.</p></div>
 </div>
-<h2 id="_hooks">6. Hooks</h2>
+<h2 id="_parse_tree">6. Parse Tree</h2>
 <div class="sectionbody">
-<h3 id="_nte_canparse_te_canparse">6.1. NTE.canparse, TE.canparse</h3><div style="clear:left"></div>
+<div class="paragraph"><p>The function <tt>parse</tt> returns the top production class
+instantiated. All NTE classes have the field <tt>items</tt> which contain
+respective TE&#8217;s, NTE&#8217;s instantiated. TE classes have a member <tt>value</tt>
+bound to the parsed value.</p></div>
+<div class="paragraph"><p>For constant TE&#8217;s ( like in this rule: ["is", "+"]), TE classes are
+generated at runtime, containing a regular expression matching exactly
+the given string. Those TE classes have their name set to
+<tt>"TE_"+name</tt>, where name is exactly the given constant string.</p></div>
+</div>
+<h2 id="_hooks_semantic_actions">7. Hooks, Semantic actions</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Since the parser returns a parse tree with the NTE/TE classes
+instantiated, semantic actions can be easily defined by implementing
+methods in the classes.</p></div>
+<div class="paragraph"><p>However, to direct the parser while it is running, the following hooks
+are provided:</p></div>
+<h3 id="_nte_canparse_te_canparse">7.1. NTE.canparse, TE.canparse</h3><div style="clear:left"></div>
 <div class="paragraph"><p>This method is called on an NTE/TE when it is about to be
 parsed. Semantic checks can be implemented here. When the method
 returns <tt>False</tt>, the NTE/TE cannot be parsed.</p></div>
-<h3 id="_te_onparse_nte_onparse">6.2. TE.onparse, NTE.onparse</h3><div style="clear:left"></div>
+<h3 id="_nte_onparse_te_onparse">7.2. NTE.onparse, TE.onparse</h3><div style="clear:left"></div>
 <div class="paragraph"><p>Called when an TE/NTE was successfully parsed. For example, this can
 be used to create entries in the Namespace.</p></div>
 </div>
-<h2 id="_dynamic_syntax">7. Dynamic Syntax</h2>
+<h2 id="_dynamic_syntax">8. Dynamic Syntax</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>Syntax rules can be added while parsing. This means one can extend the
 syntax arbitrarily.</p></div>
@@ -684,71 +702,106 @@ is extended by <tt>uses</tt> statements. These statements import new python
 modules which in turn define new TE&#8217;s, NTE&#8217;s and call <tt>add_rule</tt>. The
 magic happens in the Uses.onparse method.</p></div>
 </div>
-<h2 id="_tokenizer">8. Tokenizer</h2>
+<h2 id="_tokenizer">9. Tokenizer</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>The tokenizer is as dynamic as the parser. Since TE&#8217;s can provide the
 regular expressions they match, the tokenizer can be configured at
 runtime.</p></div>
 </div>
-<h2 id="_examples">9. Examples</h2>
+<h2 id="_namespaces">10. Namespaces</h2>
 <div class="sectionbody">
-<h3 id="_expressions">9.1. Expressions</h3><div style="clear:left"></div>
+<div class="paragraph"><p>Currently, no hierarchial namespaces are implemented. Probably this
+could be done outside the parser anyway.</p></div>
+<div class="paragraph"><p>Namespace is provided in the module <tt>namespace</tt>. It provides simple
+stores, indexed with strings and contain key-value-pairs.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.4
-by Lorenzo Bettini
-http://www.lorenzobettini.it
-http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">Expression</span></span><span style="color: #990000">(</span>NTE<span style="color: #990000">):</span><span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">SimpleExpression</span></span><span style="color: #990000">(</span>NTE<span style="color: #990000">):</span><span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">Term</span></span><span style="color: #990000">(</span>NTE<span style="color: #990000">):</span><span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">Factor</span></span><span style="color: #990000">(</span>NTE<span style="color: #990000">):</span><span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">RelationalOperator</span></span><span style="color: #990000">(</span>TE<span style="color: #990000">):</span>
-    expression<span style="color: #990000">=</span>re<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">compile</span></span><span style="color: #990000">(</span>r<span style="color: #FF0000">"=|&lt;|&gt;|&lt;=|&gt;|&gt;="</span><span style="color: #990000">)</span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">AdditionOperator</span></span><span style="color: #990000">(</span>TE<span style="color: #990000">):</span>
-    expression <span style="color: #990000">=</span> re<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">compile</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"\+|-|or"</span><span style="color: #990000">)</span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">MultiplicationOperator</span></span><span style="color: #990000">(</span>TE<span style="color: #990000">):</span>
-    expression <span style="color: #990000">=</span> re<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">compile</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"\*|/|div|mod|and"</span><span style="color: #990000">)</span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">Variable</span></span><span style="color: #990000">(</span>TE<span style="color: #990000">):</span>
-    expression <span style="color: #990000">=</span> re<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">compile</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"\w+"</span><span style="color: #990000">)</span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">Number</span></span><span style="color: #990000">(</span>TE<span style="color: #990000">):</span>
-    expression <span style="color: #990000">=</span> re<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">compile</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"\d+"</span><span style="color: #990000">)</span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">Sign</span></span><span style="color: #990000">(</span>TE<span style="color: #990000">):</span>
-    expression <span style="color: #990000">=</span> re<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">compile</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"-|\+"</span><span style="color: #990000">)</span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">SignOpt</span></span><span style="color: #990000">(</span>NTE<span style="color: #990000">):</span><span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
+<div class="content">
+<pre><tt><i># when reading a variable declaration</i>
+add_symbol('variable', self.items[1].value, self)</tt></pre>
+</div></div>
+</div>
+<h2 id="_examples">11. Examples</h2>
+<div class="sectionbody">
+<h3 id="_expressions">11.1. Expressions</h3><div style="clear:left"></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt><strong>class</strong> SimpleExpression(NTE):
+    <strong>def</strong> calc(self):
+        val = self.items[0].calc()
+        <strong>for</strong> rep <strong>in</strong> self.items[1:]:
+            val = rep.items[0].calc(val, rep.items[1].calc())
+        <strong>return</strong> val
 
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">Rep1</span></span><span style="color: #990000">(</span>NTE<span style="color: #990000">):</span><span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">Rep2</span></span><span style="color: #990000">(</span>NTE<span style="color: #990000">):</span><span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
-<span style="font-weight: bold"><span style="color: #0000FF">class</span></span> <span style="font-weight: bold"><span style="color: #000000">Rep3</span></span><span style="color: #990000">(</span>NTE<span style="color: #990000">):</span><span style="font-weight: bold"><span style="color: #0000FF">pass</span></span>
-<span style="font-weight: bold"><span style="color: #000000">add_rule</span></span><span style="color: #990000">(</span>SignOpt<span style="color: #990000">,</span> <span style="color: #990000">[</span>Sign<span style="color: #990000">])</span>
-<span style="font-weight: bold"><span style="color: #000000">add_rule</span></span><span style="color: #990000">(</span>SignOpt<span style="color: #990000">,</span> <span style="color: #990000">[])</span>
-<span style="font-weight: bold"><span style="color: #000000">add_rule</span></span><span style="color: #990000">(</span>Rep1<span style="color: #990000">,</span> <span style="color: #990000">[</span> RelationalOperator<span style="color: #990000">,</span> SimpleExpression <span style="color: #990000">])</span>
-<span style="font-weight: bold"><span style="color: #000000">add_rule</span></span><span style="color: #990000">(</span>Rep2<span style="color: #990000">,</span> <span style="color: #990000">[</span> AdditionOperator<span style="color: #990000">,</span> Term <span style="color: #990000">])</span>
-<span style="font-weight: bold"><span style="color: #000000">add_rule</span></span><span style="color: #990000">(</span>Rep3<span style="color: #990000">,</span> <span style="color: #990000">[</span> MultiplicationOperator<span style="color: #990000">,</span> Factor <span style="color: #990000">])</span>
+<strong>class</strong> Term(NTE):
+    <strong>def</strong> calc(self):
+        val = self.items[0].calc()
+        <strong>for</strong> rep <strong>in</strong> self.items[1:]:
+            val = rep.items[0].calc(val, rep.items[1].calc())
+        <strong>return</strong> val
 
-<span style="font-weight: bold"><span style="color: #000000">add_rule</span></span><span style="color: #990000">(</span>Expression<span style="color: #990000">,</span> <span style="color: #990000">[</span> SimpleExpression<span style="color: #990000">,</span> <span style="color: #990000">[</span>Rep1<span style="color: #990000">]</span> <span style="color: #990000">])</span>
-<span style="font-weight: bold"><span style="color: #000000">add_rule</span></span><span style="color: #990000">(</span>SimpleExpression<span style="color: #990000">,</span> <span style="color: #990000">[</span> SignOpt<span style="color: #990000">,</span> Term<span style="color: #990000">,</span> <span style="color: #990000">[</span>Rep2<span style="color: #990000">]</span> <span style="color: #990000">])</span>
-<span style="font-weight: bold"><span style="color: #000000">add_rule</span></span><span style="color: #990000">(</span>Term<span style="color: #990000">,</span> <span style="color: #990000">[</span> Factor<span style="color: #990000">,</span> <span style="color: #990000">[</span>Rep3<span style="color: #990000">]</span> <span style="color: #990000">])</span>
-<span style="font-weight: bold"><span style="color: #000000">add_rule</span></span><span style="color: #990000">(</span>Factor<span style="color: #990000">,</span> <span style="color: #990000">[</span> Variable <span style="color: #990000">])</span>
-<span style="font-weight: bold"><span style="color: #000000">add_rule</span></span><span style="color: #990000">(</span>Factor<span style="color: #990000">,</span> <span style="color: #990000">[</span> Number <span style="color: #990000">])</span>
-<span style="font-weight: bold"><span style="color: #000000">add_rule</span></span><span style="color: #990000">(</span>Factor<span style="color: #990000">,</span> <span style="color: #990000">[</span> <span style="color: #FF0000">"("</span><span style="color: #990000">,</span> Expression<span style="color: #990000">,</span> <span style="color: #FF0000">")"</span> <span style="color: #990000">])</span>
+<strong>class</strong> Factor(NTE):<strong>pass</strong>
 
-<span style="font-weight: bold"><span style="color: #000000">parse</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"5+4"</span><span style="color: #990000">,</span> Expression<span style="color: #990000">)</span>
-<span style="font-weight: bold"><span style="color: #000000">parse</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"5+((x*3) * 4-1 / 10 div y)"</span><span style="color: #990000">,</span> Expression<span style="color: #990000">)</span>
-<span style="font-weight: bold"><span style="color: #000000">parse</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"((x*3) * 4-1 / 10 div y)"</span><span style="color: #990000">,</span> Expression<span style="color: #990000">)</span>
-<span style="font-weight: bold"><span style="color: #000000">parse</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"5+((x*3) * 41 / 10 div y)"</span><span style="color: #990000">,</span> Expression<span style="color: #990000">)</span>
-<span style="font-weight: bold"><span style="color: #000000">parse</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"-9* (-9)"</span><span style="color: #990000">,</span> Expression<span style="color: #990000">)</span>
-<span style="font-weight: bold"><span style="color: #000000">parse</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"5+4+9+9+8+7"</span><span style="color: #990000">,</span> Expression<span style="color: #990000">)</span></tt></pre></div></div>
-<h3 id="_unit_tests">9.2. Unit Tests</h3><div style="clear:left"></div>
+<i># note the inheritance:</i>
+
+<strong>class</strong> NumberFactor(Factor):
+    <strong>def</strong> calc(self):
+        <strong>return</strong> int(self.items[0].value)
+
+<strong>class</strong> ExpressionFactor(Factor):
+    <strong>def</strong> calc(self):
+        <strong>return</strong> self.items[1].calc()
+
+<strong>class</strong> AdditionOperator(TE):
+    expression = r"\+|-"
+    <strong>def</strong> calc(self, left, right):
+        <strong>return</strong> { "+" : <strong>lambda</strong>: left+right,
+                 "-" : <strong>lambda</strong>: left-right }[self.value]()
+
+<strong>class</strong> MultiplicationOperator(TE):
+    expression = r"\*|/|mod"
+    <strong>def</strong> calc(self, left, right):
+        <strong>return</strong> { "*" : <strong>lambda</strong>: left*right,
+                 "/" : <strong>lambda</strong>: left/right,
+                 "mod": <strong>lambda</strong>: left%right}[self.value]()
+
+<strong>class</strong> Number(TE):  expression = r"\d+"
+<strong>class</strong> Sign(TE):    expression = r"-|\+"
+<strong>class</strong> SignOpt(NTE):<strong>pass</strong>
+
+<strong>class</strong> Rep2(NTE):<strong>pass</strong>
+<strong>class</strong> Rep3(NTE):<strong>pass</strong>
+
+add_rule(SignOpt, (Sign,))
+add_rule(SignOpt, ())
+add_rule(Rep2, (AdditionOperator, Term ))
+add_rule(Rep3, (MultiplicationOperator, Factor))
+
+add_rule(SimpleExpression, [ Term, [Rep2] ])
+add_rule(Term, [ Factor, [Rep3] ])
+add_rule(NumberFactor, [ Number ])
+add_rule(ExpressionFactor, [ "(", SimpleExpression, ")" ])
+
+self.assertEquals(parse("5+4", SimpleExpression).calc(),
+                  5+4)
+self.assertEquals(parse("5+4+9+9+8+7", SimpleExpression).calc(),
+                  5+4+9+9+8+7)
+self.assertEquals(parse("1*2+(5*3)+(10/2)", SimpleExpression).calc(),
+                  1*2+(5*3)+(10/2))
+
+self.assertEquals(parse("10/9*(10*(10))+1-1", SimpleExpression).calc(),
+                          10/9*(10*(10))+1-1)</tt></pre>
+</div></div>
+<h3 id="_unit_tests">11.2. Unit Tests</h3><div style="clear:left"></div>
 <div class="paragraph"><p>Have a look at the unit tests, in <tt>/test</tt>. They show some features of
 the parser, and real-world examples.</p></div>
-<h3 id="_project_em_hla_em">9.3. Project <em>hla</em></h3><div style="clear:left"></div>
+<h3 id="_project_em_hla_em">11.3. Project <em>hla</em></h3><div style="clear:left"></div>
 <div class="paragraph"><p>See <a href="https://github.com/mru00/hla">https://github.com/mru00/hla</a></p></div>
 </div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2011-03-28 13:55:45 CEST
+Last updated 2011-03-28 16:12:40 CEST
 </div>
 </div>
 </body>

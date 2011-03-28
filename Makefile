@@ -1,4 +1,7 @@
-.PHONY: test
+.PHONY: test dist doc
+
+doc:
+	$(MAKE) -C doc doc 
 
 test:
 	$(MAKE) -C test test
