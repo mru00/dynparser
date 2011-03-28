@@ -7,6 +7,7 @@ test:
 	$(MAKE) -C test test
 
 dist:
+	git diff --quiet HEAD || ( echo "uncommited changes; abort"; exit 1; )
 	rm -rf dist
 	mkdir -p dist/dynparser
 	cp ./src/dynparser/*.py dist/dynparser
