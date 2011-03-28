@@ -10,5 +10,6 @@ dist:
 	git diff --quiet HEAD || ( echo "uncommited changes; abort"; exit 1; )
 	rm -rf dist
 	mkdir -p dist/dynparser
+	git rev-parse --verify HEAD > dist/dynparser/VERSION
 	cp ./src/dynparser/*.py dist/dynparser
 	cd dist && tar czf dynparser.tar.gz dynparser
