@@ -1,9 +1,6 @@
 import re
 import logging
 from namespace import *
-from gendb import *
-import gendb
-from mako.template import Template
 
 class TE(object):
     expression = re.compile(r"\w+")
@@ -22,9 +19,6 @@ class TE(object):
         return True
 
 class NTE(object):
-    genpos = GEN_HERE
-    template = Template(r"""/*not implemented : ${nte.__class__}*/
-""")
     def __init__(self):
         self.items = []
         self.isparsed = False
@@ -52,11 +46,6 @@ class NTE(object):
         return d
     def onparse(self):
         pass
-    def gencode(self):
-        pass
-    def render(self, level=0):
-        logging.debug("rendering: %s" % self.__class__.__name__)
-        return self.template.render(nte=self, gendb=gendb, level=level)
     def canparse(self):
         return True
 
