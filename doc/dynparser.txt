@@ -162,6 +162,20 @@ Since the parser returns a parse tree with the NTE/TE classes
 instantiated, semantic actions can be easily defined by implementing
 methods in the classes.
 
+Python allows adding methods to classes at runtime, therefore it is no
+biggie to add methods directly to NTE and TE:
+
+---------------------------------------------
+import new
+
+# add needed stuff to the base classes
+NTE.genpos = gendb.GEN_HERE
+NTE.render = new.instancemethod(render,None, NTE)
+NTE.template =  Template(r"/* not implemented: ${nte.__class__} */")
+---------------------------------------------
+
+
+
 However, to direct the parser while it is running, the following hooks
 are provided:
 
